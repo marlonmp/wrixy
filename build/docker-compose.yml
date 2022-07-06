@@ -1,0 +1,79 @@
+version: '2.3'
+
+services:
+
+  psql:
+    container_name: psql
+    restart: "no"
+
+    image: postgres:14-alpine
+
+    ports:
+      - 5432:5432
+
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=wrixy
+
+    volumes:
+      - psql:/var/lib/postgresql/data
+
+    networks:
+      - backend
+
+  # mongo:
+    # container_name: mongo
+    # restart: "no"
+
+    # image: mongo:5.0
+
+    # ports:
+      # - 27017:27017
+
+    # environment:
+      # - MONGO_INITDB_ROOT_USERNAME=root
+      # - MONGO_INITDB_ROOT_PASSWORD=root
+
+    # volumes:
+      # - mongo:/data/db
+
+    # networks:
+      # - backend
+
+
+  api:
+    container_name: api
+    depends_on:
+      - psql
+      # - mongo
+
+    image: golang:1.18.0-alphine
+
+    build:
+      context: ../
+      dockerfile: build/Dockerfile
+
+    command: sh -c 'air -c .air.toml'
+
+    ports:
+      - 8000:8000
+
+    environment:
+      - DEBUG=TRUE
+      - PSQL_URI=postgresql://root:root@psql:5432/wrixy
+      # - MONGO_URI=mongodb://root:root@db:27017
+      - HOST_PORT=0.0.0.0:8000
+      - JWT_SECRET_KEY=9b7e4f37-c86f-456c-ac81-9c9f63a1715d
+
+    volumes:
+      - ../:/app
+
+
+volumes:
+  psql:
+  # mongo:
+
+
+networks:
+  backend:
