@@ -1,10 +1,10 @@
-version: '2.3'
+version: '2.6'
 
 services:
 
   psql:
     container_name: psql
-    restart: "no"
+    restart: 'no'
 
     image: postgres:14-alpine
 
@@ -18,13 +18,14 @@ services:
 
     volumes:
       - psql:/var/lib/postgresql/data
+      # - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
     networks:
       - backend
 
   # mongo:
     # container_name: mongo
-    # restart: "no"
+    # restart: 'no'
 
     # image: mongo:5.0
 
@@ -41,12 +42,30 @@ services:
     # networks:
       # - backend
 
+  redis:
+    container_name: redis
+    restart: 'always'
+
+    image: redis:6-alpine
+
+    ports:
+      - 6379:6379
+
+    environment:
+      - REDIS_ARGS="--requirepass root"
+
+    volumes:
+      - redis:/data
+
+    networks:
+      - cache
 
   api:
     container_name: api
     depends_on:
       - psql
       # - mongo
+      - redis
 
     image: golang:1.18.0-alphine
 
@@ -62,18 +81,25 @@ services:
     environment:
       - DEBUG=TRUE
       - PSQL_URI=postgresql://root:root@psql:5432/wrixy
-      # - MONGO_URI=mongodb://root:root@db:27017
+      # - MONGO_URI=mongodb://root:root@mongo:27017
+      - REDIS_URI=redis://root@redis:6379/0
       - HOST_PORT=0.0.0.0:8000
       - JWT_SECRET_KEY=9b7e4f37-c86f-456c-ac81-9c9f63a1715d
 
     volumes:
       - ../:/app
 
+    networks:
+      - backend
+      - cache
+
 
 volumes:
   psql:
   # mongo:
+  redis:
 
 
 networks:
   backend:
+  cache:
