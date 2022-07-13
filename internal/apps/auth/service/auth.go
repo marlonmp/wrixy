@@ -36,6 +36,11 @@ func (as authService) SignIn(credentials domain.Credentials) (string, error) {
 	return as.repo.Set(session, defaultDuration)
 }
 
+func (as authService) SignOut(sid string) error {
+
+	return as.repo.Del(sid)
+}
+
 func (as authService) Verify(sid string) (domain.Session, error) {
 
 	return as.repo.Get(sid)
@@ -50,9 +55,4 @@ func (as authService) Refresh(sid string, duration time.Duration) (newSID string
 	}
 
 	return as.repo.Set(session, duration)
-}
-
-func (as authService) SignOut(sid string) error {
-
-	return as.repo.Del(sid)
 }
