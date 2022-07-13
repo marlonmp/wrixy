@@ -1,14 +1,17 @@
 package port
 
 import (
-	"github.com/google/uuid"
+	"time"
+
 	"github.com/marlonmp/wrixy/internal/apps/auth/domain"
 )
 
 type AuthService interface {
-	SignIn(c domain.Credentials) (token string, err error)
+	SignIn(credentials domain.Credentials) (sid string, err error)
 
-	Verify(token string) error
+	Verify(sid string) (session domain.Session, err error)
 
-	SignOut(tokenID uuid.UUID) error
+	Refresh(sid string, duration time.Duration) (newSID string, err error)
+
+	SignOut(sid string) error
 }

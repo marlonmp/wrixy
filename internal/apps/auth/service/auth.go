@@ -1,22 +1,25 @@
 package service
 
 import (
-	"github.com/google/uuid"
+	"time"
+
 	"github.com/marlonmp/wrixy/internal/apps/auth/domain"
 	"github.com/marlonmp/wrixy/internal/apps/auth/port"
 	uport "github.com/marlonmp/wrixy/internal/apps/user/port"
 )
 
+const defaultDuration time.Duration = time.Hour * 2
+
 type authService struct {
-	repo  port.JWTRepo
+	repo  port.SessionRepo
 	urepo uport.UserRepo
 }
 
-func AuthService(r port.JWTRepo, ur uport.UserRepo) port.AuthService {
+func AuthService(r port.SessionRepo, ur uport.UserRepo) port.AuthService {
 	return authService{r, ur}
 }
 
-func (as authService) SignIn(credentials domain.Credentials) (token string, err error) {
+func (as authService) SignIn(credentials domain.Credentials) (string, error) {
 
 	ufilter := uport.UserFilter{
 		Username: credentials.Identification,
@@ -25,36 +28,31 @@ func (as authService) SignIn(credentials domain.Credentials) (token string, err 
 	u, err := as.urepo.FindOne(ufilter)
 
 	if err != nil {
-		return
+		return "", err
 	}
 
-	// TODO: apply jwt generate token
+	session := domain.Session{Identifier: u.Username}
 
-	// TODO: use `u: domain.User`
-
-	return
+	return as.repo.Set(session, defaultDuration)
 }
 
-func (as authService) Verify(token string) error {
+func (as authService) Verify(sid string) (domain.Session, error) {
 
-	// TODO: apply jwt verify token
+	return as.repo.Get(sid)
+}
 
-	hasID, err := as.repo.Has(id)
+func (as authService) Refresh(sid string, duration time.Duration) (newSID string, err error) {
+
+	session, err := as.repo.Get(sid)
 
 	if err != nil {
-		// TODO: return fiber.StatusInternalServerError: 500
-		return nil
+		return "", err
 	}
 
-	if hasID {
-		// TODO: return fiber.StatusForbidden: 403
-		return nil
-	}
-
-	return nil
+	return as.repo.Set(session, duration)
 }
 
-func (as authService) SignOut(id uuid.UUID) error {
+func (as authService) SignOut(sid string) error {
 
-	return as.repo.Add(id)
+	return as.repo.Del(sid)
 }
