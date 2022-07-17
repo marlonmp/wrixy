@@ -125,7 +125,7 @@ func (ur userRepo) InsertOne(user domain.User) (u domain.User, err error) {
 
 func (ur userRepo) UpdateOne(id uuid.UUID, user domain.User) (u domain.User, err error) {
 
-	q := bqb.Optional(`update "user" set "updated_at" = now()`)
+	q := bqb.New(`update "user" set "updated_at" = now()`)
 
 	if len(user.Nickname) > 0 {
 		q.Comma(`"nickname" = ?`, user.Nickname)
