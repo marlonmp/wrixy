@@ -1,3 +1,4 @@
+// TODO: add user and uuid validations and its tests
 package service
 
 import (
@@ -14,22 +15,25 @@ func UserService(repo port.UserRepo) port.UserService {
 	return userService{repo}
 }
 
-func (us userService) List(filter *port.UserFilter) (*[]domain.User, error) {
+func (us userService) List(filter port.UserFilter) ([]domain.User, error) {
 
-	if filter == nil {
-		filter = &port.UserFilter{}
+	if filter.Limit < 1 {
+		filter.Limit = 10
+		filter.Offset = 0
 	}
 
-	filter.HasDeletedAt = false
-	filter.Offset = 0
-	filter.Limit = 10
+	if filter.Offset < 0 {
+		filter.Offset = 0
+	}
 
-	return us.repo.Find(*filter)
+	filter.IsDeleted = false
+
+	return us.repo.Find(filter)
 }
 
 func (us userService) Get(filter port.UserFilter) (domain.User, error) {
 
-	filter.HasDeletedAt = false
+	filter.IsDeleted = false
 
 	return us.repo.FindOne(filter)
 }
@@ -41,20 +45,10 @@ func (us userService) Post(user domain.User) (domain.User, error) {
 
 func (us userService) Update(id uuid.UUID, user domain.User) (domain.User, error) {
 
-	filter := port.UserFilter{
-		UUID:         id,
-		HasDeletedAt: false,
-	}
-
-	return us.repo.UpdateOne(filter, user)
+	return us.repo.UpdateOne(id, user)
 }
 
 func (us userService) Delete(id uuid.UUID) (domain.User, error) {
 
-	filter := port.UserFilter{
-		UUID:         id,
-		HasDeletedAt: false,
-	}
-
-	return us.repo.DeleteOne(filter)
+	return us.repo.DeleteOne(id)
 }

@@ -6,31 +6,32 @@ import (
 )
 
 type UserFilter struct {
-	UUID uuid.UUID `query:"uuid"`
+	ID uuid.UUID
 
+	Nickname string `query:"nickname"`
 	Username string `query:"username"`
-	Email    string `query:"email"`
+	Email    string
 
-	HasDeletedAt bool `query:"has_deleted_at"`
+	IsDeleted bool
 
 	Offset uint `query:"o"`
 	Limit  uint `query:"l"`
 }
 
 type UserRepo interface {
-	Find(UserFilter) (*[]domain.User, error)
+	Find(UserFilter) ([]domain.User, error)
 
 	FindOne(UserFilter) (domain.User, error)
 
 	InsertOne(domain.User) (domain.User, error)
 
-	UpdateOne(UserFilter, domain.User) (domain.User, error)
+	UpdateOne(uuid.UUID, domain.User) (domain.User, error)
 
-	DeleteOne(UserFilter) (domain.User, error)
+	DeleteOne(uuid.UUID) (domain.User, error)
 }
 
 type UserService interface {
-	List(*UserFilter) (*[]domain.User, error)
+	List(UserFilter) ([]domain.User, error)
 
 	Get(UserFilter) (domain.User, error)
 

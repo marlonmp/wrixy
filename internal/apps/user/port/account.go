@@ -6,6 +6,8 @@ import (
 )
 
 type AccountService interface {
+	Create(domain.User) (domain.User, error)
+
 	Get(uuid.UUID) (domain.User, error)
 
 	Update(uuid.UUID, domain.User) (domain.User, error)

@@ -7,9 +7,9 @@ import (
 )
 
 type User struct {
-	UUID uuid.UUID
+	ID uuid.UUID
 
-	Names string
+	Nickname string
 
 	Email    string
 	Username string
