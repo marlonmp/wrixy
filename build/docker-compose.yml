@@ -80,7 +80,7 @@ services:
 
     environment:
       - DEBUG=TRUE
-      - PSQL_URI=postgresql://root:root@psql:5432/wrixy
+      - PSQL_URI=postgres://root:root@psql:5432/wrixy?sslmode=disable
       # - MONGO_URI=mongodb://root:root@mongo:27017
       - REDIS_URI=redis://root@redis:6379/0
       - HOST_PORT=0.0.0.0:8000
