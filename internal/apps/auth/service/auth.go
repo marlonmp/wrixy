@@ -3,56 +3,37 @@ package service
 import (
 	"time"
 
-	"github.com/marlonmp/wrixy/internal/apps/auth/domain"
-	"github.com/marlonmp/wrixy/internal/apps/auth/port"
-	uport "github.com/marlonmp/wrixy/internal/apps/user/port"
+	authDomain "github.com/marlonmp/wrixy/internal/apps/auth/domain"
+	authPort "github.com/marlonmp/wrixy/internal/apps/auth/port"
+	userDomain "github.com/marlonmp/wrixy/internal/apps/user/domain"
+	userPort "github.com/marlonmp/wrixy/internal/apps/user/port"
 )
 
 const defaultDuration time.Duration = time.Hour * 2
 
 type authService struct {
-	repo  port.SessionRepo
-	urepo uport.UserRepo
+	users userPort.UserRepo
 }
 
-func AuthService(r port.SessionRepo, ur uport.UserRepo) port.AuthService {
-	return authService{r, ur}
+func AuthService(repo userPort.UserRepo) authPort.AuthService {
+	return authService{repo}
 }
 
-func (as authService) SignIn(credentials domain.Credentials) (string, error) {
+func (as authService) Authenticate(credentials authDomain.Credentials) (user userDomain.User, err error) {
 
-	ufilter := uport.UserFilter{
+	userFilter := userPort.UserFilter{
 		Username: credentials.Identification,
 	}
 
-	u, err := as.urepo.FindOne(ufilter)
+	user, err = as.users.FindOne(userFilter)
 
 	if err != nil {
-		return "", err
+		return
 	}
 
-	session := domain.Session{Identifier: u.Username}
-
-	return as.repo.Set(session, defaultDuration)
-}
-
-func (as authService) SignOut(sid string) error {
-
-	return as.repo.Del(sid)
-}
-
-func (as authService) Verify(sid string) (domain.Session, error) {
-
-	return as.repo.Get(sid)
-}
-
-func (as authService) Refresh(sid string, duration time.Duration) (newSID string, err error) {
-
-	session, err := as.repo.Get(sid)
-
-	if err != nil {
-		return "", err
+	if !matchPassword(user.Password, credentials.Password) {
+		return userDomain.User{}, nil
 	}
 
-	return as.repo.Set(session, duration)
+	return
 }

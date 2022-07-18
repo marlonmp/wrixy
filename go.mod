@@ -9,6 +9,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.6
 	github.com/nullism/bqb v1.2.4
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 )
 
 require (
