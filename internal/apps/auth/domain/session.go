@@ -1,5 +1,5 @@
 package domain
 
 type Session struct {
-	Identifier string
+	Identifier string `json:"identifier"`
 }
