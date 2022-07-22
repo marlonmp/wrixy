@@ -6,7 +6,7 @@ import (
 )
 
 type UserFilter struct {
-	ID uuid.UUID
+	ID uuid.UUID `params:"uuid"`
 
 	Nickname string `query:"nickname"`
 	Username string `query:"username"`
